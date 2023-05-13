@@ -4,7 +4,7 @@ pipeline {
 	
 	tools {
 	jdk "OracleJDK8"
-        maven "maven3"
+        maven "MAVEN3"
     }	
     stages{
         
