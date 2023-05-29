@@ -1,3 +1,7 @@
+def COLOR_MAP = [
+    'SUCCESS': 'good', 
+    'FAILURE': 'danger',
+]
 pipeline {
     
 	agent any
@@ -5,8 +9,27 @@ pipeline {
 	tools {
 	jdk "OracleJDK8"
         maven "MAVEN3"
-    }	
-    stages{        
+    }
+     environment {
+        /* SNAP_REPO = 'vprofile-snapshot'
+		NEXUS_USER = 'admin'
+		NEXUS_PASS = 'admin123'
+		RELEASE_REPO = 'vprofile-release'
+		CENTRAL_REPO = 'vpro-maven-central'
+		NEXUSIP = '172.31.5.4'
+		NEXUSPORT = '8081'
+		NEXUS_GRP_REPO = 'vpro-maven-group'
+        NEXUS_LOGIN = 'nexuslogin'
+        SONARSERVER = 'sonarserver'
+        SONARSCANNER = 'sonarscanner'
+        registryCredential = 'ecr:us-west-1:awscreds'
+        appRegistry = '951401132355.dkr.ecr.us-west-1.amazonaws.com/vprofileappimg'
+        vprofileRegistry = "https://951401132355.dkr.ecr.us-west-1.amazonaws.com"  */
+        cluster = "vproappprod"
+        service = "vproappprodsvc"
+    }
+    stages{   
+    /*
         stage('BUILD'){
             steps {
                 sh 'mvn clean install -DskipTests'
@@ -35,13 +58,14 @@ pipeline {
             steps {
                 sh 'mvn checkstyle:checkstyle'
             }
-            post {
-                success {
-                    echo 'Generated Analysis Result'
-                }
+            */
+stage('Deploy to ECS staging') {
+            steps {
+                withAWS(credentials: 'awscreds', region: 'us-west-1') {
+                    sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+                } 
             }
         }
-
         /* stage("Publish to Nexus Repository Manager") {
             steps {
                 script {
@@ -80,6 +104,14 @@ pipeline {
         }
 */
 
+    }
+     post {
+        always {
+            echo 'Slack Notifications.'
+            slackSend channel: '#jenkinscicd',
+                color: COLOR_MAP[currentBuild.currentResult],
+                message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
+        }
     }
 
 }
