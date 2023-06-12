@@ -1,3 +1,4 @@
+![Screenshot (12)](https://github.com/DevOps-0user/CI_DevOpsProject/assets/129683318/40e1344e-091e-4de3-95c2-c10dfd843cc9)
 ######
 ### Prerequisites
 - JDK 1.8 or later
